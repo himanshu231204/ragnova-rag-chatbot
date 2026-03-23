@@ -7,9 +7,7 @@ from dotenv import load_dotenv
 from src.data_loader import load_all_documents
 from src.search import RAGSearch
 
-
 load_dotenv()
-
 
 DEFAULT_EMBED_MODEL = "all-MiniLM-L6-v2"
 DEFAULT_LLM_MODEL = "llama-3.3-70b-versatile"
@@ -27,11 +25,9 @@ DEFAULT_EMBED_MODELS = [
     "all-mpnet-base-v2",
 ]
 
-
 def _index_exists(persist_dir: str) -> bool:
     base = Path(persist_dir)
     return (base / "faiss.index").exists() and (base / "metadata.pkl").exists()
-
 
 def _source_documents_count(data_dir: str = "data") -> int:
     base = Path(data_dir)
@@ -39,7 +35,6 @@ def _source_documents_count(data_dir: str = "data") -> int:
         return 0
     patterns = ["**/*.pdf", "**/*.txt", "**/*.csv", "**/*.xlsx", "**/*.docx", "**/*.json"]
     return sum(len(list(base.glob(pattern))) for pattern in patterns)
-
 
 @st.cache_resource(show_spinner=False)
 def get_rag_client(
@@ -55,14 +50,12 @@ def get_rag_client(
         groq_api_key=groq_api_key,
     )
 
-
 def build_index(persist_dir: str, embedding_model: str) -> None:
     from src.vectorstore import FaissVectorStore
 
     docs = load_all_documents("data")
     store = FaissVectorStore(persist_dir=persist_dir, embedding_model=embedding_model)
     store.build_from_documents(docs)
-
 
 def _light_mode_overrides() -> str:
     return """
@@ -128,14 +121,12 @@ def _light_mode_overrides() -> str:
         }
     """
 
-
 def _inject_styles(is_light_mode: bool) -> None:
     css_path = Path("assets/ragnova.css")
     css_text = css_path.read_text(encoding="utf-8") if css_path.exists() else ""
     mode_overrides = _light_mode_overrides() if is_light_mode else ""
     css_text = css_text.replace("/* MODE_OVERRIDES */", mode_overrides)
     st.markdown(f"<style>{css_text}</style>", unsafe_allow_html=True)
-
 
 def main() -> None:
     st.set_page_config(page_title=APP_NAME, page_icon="RN", layout="wide")
@@ -462,8 +453,21 @@ def main() -> None:
             """,
             unsafe_allow_html=True,
         )
-        st.markdown("</div>", unsafe_allow_html=True)
 
+    # FOOTER
+    st.divider()
+
+    st.markdown(
+        """
+        <div style="text-align:center; font-size:14px;">
+            👨‍💻 Developed by <b>Himanshu Kumar</b><br><br>
+            🔗 
+            <a href="https://www.linkedin.com/in/himanshu231204" target="_blank">LinkedIn</a> |
+            <a href="https://github.com/himanshu231204" target="_blank">GitHub</a>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
 
 if __name__ == "__main__":
     main()
