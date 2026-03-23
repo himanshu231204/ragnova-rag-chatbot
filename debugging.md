@@ -40,6 +40,43 @@ We will keep appending updates here.
   - Large chunk volume causes long processing time.
 - Status: Open (performance/timeout/interrupt related), not a code-crash at PDF load step.
 
+### 5) Streamlit application added
+- Goal: Create a simple web UI to run the same RAG flow.
+- Action taken:
+  - Added streamlit_app.py at project root.
+  - Added streamlit in requirements.txt.
+  - Added import hardening in src/search.py for data loader when FAISS index is missing.
+- Status: Implemented. Ready to run with Streamlit command.
+
+### 6) Streamlit model + API key controls
+- Goal: Let users switch models and use their own API key from UI.
+- Action taken:
+  - Updated streamlit_app.py sidebar:
+    - Embedding model selector (preset + custom input)
+    - LLM model selector (preset + custom input)
+    - Custom GROQ API key toggle and password input
+  - Updated src/search.py:
+    - RAGSearch now accepts optional groq_api_key argument
+    - Falls back to environment key only if custom key not provided
+  - Validation:
+    - Syntax check passed for streamlit_app.py and src/search.py
+- Status: Implemented and validated.
+
+### 7) Streamlit crash: unexpected keyword argument 'response_mode'
+- Issue: Streamlit crashed with `TypeError: RAGSearch.search_and_summarize() got an unexpected keyword argument 'response_mode'`.
+- Root cause:
+  - Streamlit cache could hold a stale `RAGSearch` client instance created before the updated method signature.
+- Action taken:
+  - Added compatibility fallback in streamlit_app.py:
+    - Try calling `search_and_summarize(..., response_mode=...)`
+    - On `TypeError`, clear cached client and retry with compatible call
+  - Added CI workflow at `.github/workflows/ci.yml` to track future changes:
+    - Trigger on push, pull_request, and manual dispatch
+    - Install dependencies
+    - Run Python syntax checks
+    - Enforce API contract that `search_and_summarize` includes `response_mode`
+- Status: Fixed in code, and guarded with CI for regression tracking.
+
 ## Next updates
 - Add each new issue in this format:
   - Issue

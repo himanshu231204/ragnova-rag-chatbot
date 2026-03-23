@@ -14,3 +14,4 @@ chromadb
 #llm
 langchain-groq
 python-dotenv
+streamlit
