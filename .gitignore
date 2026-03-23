@@ -201,7 +201,9 @@ cython_debug/
 # Vector store artifacts
 data/vector_store/
 data/vectore_store/
-faiss_store/
+faiss_store/*
+!faiss_store/faiss.index
+!faiss_store/metadata.pkl
 fassi_store/
 #  exclude from AI features like autocomplete and code analysis. Recommended for sensitive data
 #  refer to https://docs.cursor.com/context/ignore-files

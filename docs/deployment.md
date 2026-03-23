@@ -14,6 +14,18 @@ GROQ_API_KEY = "your_key_here"
 
 6. Deploy.
 
+## Instant Startup Strategy (No Manual Rebuild)
+
+To avoid asking users to click "Build/Rebuild Index" on first open:
+
+1. Build index locally once.
+2. Commit these files to the repository:
+	- `faiss_store/faiss.index`
+	- `faiss_store/metadata.pkl`
+3. Push to GitHub and redeploy.
+
+With this, app starts ready-to-chat on Streamlit Cloud.
+
 ## GitHub Actions
 
 - `ci.yml`: syntax checks
