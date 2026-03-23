@@ -1,4 +1,4 @@
-import os
+﻿import os
 from pathlib import Path
 
 import streamlit as st
@@ -57,7 +57,6 @@ def get_rag_client(
 
 
 def build_index(persist_dir: str, embedding_model: str) -> None:
-    # Local import avoids import cycles and keeps startup fast.
     from src.vectorstore import FaissVectorStore
 
     docs = load_all_documents("data")
@@ -65,14 +64,8 @@ def build_index(persist_dir: str, embedding_model: str) -> None:
     store.build_from_documents(docs)
 
 
-def main() -> None:
-    st.set_page_config(page_title=APP_NAME, page_icon="RN", layout="wide")
-
-    if "theme_mode" not in st.session_state:
-        st.session_state.theme_mode = "Dark"
-
-    is_light_mode = st.session_state.theme_mode == "Light"
-    mode_overrides = """
+def _light_mode_overrides() -> str:
+    return """
         .stApp {
             background: radial-gradient(circle at 20% 20%, #f3f8ff 0%, #eaf1fb 45%, #f7f9fc 100%);
             color: #0f172a;
@@ -133,264 +126,25 @@ def main() -> None:
         .social-link {
             color: #ffffff !important;
         }
-    """ if is_light_mode else ""
+    """
 
-    style_block = """
-        <style>
-        :root {
-            --bg: #111111;
-            --panel: #1a1a1a;
-            --border: #2a2a2a;
-            --text: #e9e9e9;
-            --muted: #a0a0a0;
-            --accent: #00a67e;
-        }
-        .stApp {
-            background: radial-gradient(circle at 20% 20%, #1b1b1b 0%, var(--bg) 48%);
-            color: var(--text);
-        }
-        section[data-testid="stSidebar"] > div:first-child {
-            background: linear-gradient(180deg, #101b20 0%, #141a25 55%, #171325 100%);
-            border-right: 1px solid #2c3643;
-        }
-        section[data-testid="stSidebar"] .stMarkdown p,
-        section[data-testid="stSidebar"] label,
-        section[data-testid="stSidebar"] .stCaption {
-            color: #dce6ee !important;
-        }
-        section[data-testid="stSidebar"] .stTextInput input,
-        section[data-testid="stSidebar"] .stSelectbox div[data-baseweb="select"] > div,
-        section[data-testid="stSidebar"] .stTextArea textarea {
-            background: #18202a !important;
-            border: 1px solid #304355 !important;
-            color: #e9f1f8 !important;
-        }
-        section[data-testid="stSidebar"] .stSlider [data-baseweb="slider"] {
-            padding-top: 0.35rem;
-        }
-        section[data-testid="stSidebar"] .stButton button {
-            background: linear-gradient(90deg, #00a67e 0%, #0f8fb0 100%);
-            color: #ffffff;
-            border: none;
-            border-radius: 10px;
-            font-weight: 600;
-        }
-        section[data-testid="stSidebar"] .stButton button:hover {
-            filter: brightness(1.07);
-        }
-        .settings-card {
-            background: linear-gradient(145deg, #1a2430 0%, #14202b 60%, #1f1933 100%);
-            border: 1px solid #31465a;
-            border-radius: 14px;
-            padding: 0.75rem 0.8rem;
-            margin-bottom: 0.8rem;
-        }
-        .settings-card .t {
-            color: #f2f8fc;
-            font-size: 1.02rem;
-            font-weight: 700;
-            margin-bottom: 0.2rem;
-        }
-        .settings-card .s {
-            color: #b8c8d6;
-            font-size: 0.86rem;
-            line-height: 1.45;
-        }
-        .app-shell {
-            max-width: 980px;
-            margin: 0 auto;
-            padding-top: 0.5rem;
-        }
-        .hero {
-            text-align: center;
-            margin-top: 2vh;
-            margin-bottom: 1rem;
-            font-size: clamp(1.8rem, 3vw, 2.5rem);
-            font-weight: 700;
-            color: #f3f3f3;
-            letter-spacing: 0.01em;
-        }
-        .brand-title {
-            font-size: clamp(2.2rem, 4vw, 3.5rem);
-            font-weight: 800;
-            letter-spacing: 0.04em;
-            background: linear-gradient(90deg, #18c5ff 0%, #00a67e 45%, #8b5cf6 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            color: transparent;
-        }
-        .brand-tagline {
-            font-weight: 500;
-            font-size: 1.03rem;
-            background: linear-gradient(90deg, #c8dbf5 0%, #d1f0e7 50%, #dcd3ff 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            color: transparent;
-            display: inline-block;
-        }
-        .subhero {
-            text-align: center;
-            color: #b7b7b7;
-            margin-bottom: 1rem;
-        }
-        .start-space {
-            height: 34vh;
-        }
-        .repo-link-wrap {
-            display: flex;
-            justify-content: flex-end;
-            margin-bottom: 0.3rem;
-        }
-        .repo-link {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            background: #202020;
-            color: #f1f1f1 !important;
-            border: 1px solid var(--border);
-            border-radius: 999px;
-            padding: 0.45rem 0.9rem;
-            text-decoration: none;
-            font-size: 0.9rem;
-        }
-        .repo-link img {
-            width: 14px;
-            height: 14px;
-            display: block;
-        }
-        .repo-link:hover {
-            border-color: #3d3d3d;
-            background: #252525;
-        }
-        .result-card {
-            background: var(--panel);
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 1rem 1.1rem;
-        }
-        .dev-shell {
-            max-width: 980px;
-            margin: 0 auto;
-            padding-top: 0.75rem;
-        }
-        .dev-card {
-            background: linear-gradient(145deg, #1f1f1f 0%, #161616 100%);
-            border: 1px solid #313131;
-            border-radius: 18px;
-            padding: 1.2rem 1.25rem;
-            margin-bottom: 1rem;
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.22);
-        }
-        .dev-title {
-            font-size: 1.35rem;
-            font-weight: 700;
-            color: #f1f1f1;
-            margin-bottom: 0.35rem;
-        }
-        .dev-role {
-            color: #bcbcbc;
-            margin-bottom: 0.8rem;
-        }
-        .dev-desc {
-            color: #d7d7d7;
-            line-height: 1.6;
-            margin-bottom: 0;
-        }
-        .dev-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-            gap: 0.7rem;
-        }
-        .dev-pill {
-            border: 1px solid #2f2f2f;
-            background: #1a1a1a;
-            border-radius: 12px;
-            padding: 0.6rem 0.7rem;
-        }
-        .dev-pill .k {
-            color: #9f9f9f;
-            font-size: 0.78rem;
-            text-transform: uppercase;
-            letter-spacing: 0.04em;
-        }
-        .dev-pill .v {
-            color: #f2f2f2;
-            font-size: 0.95rem;
-            margin-top: 0.2rem;
-        }
-        .social-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
-            gap: 0.6rem;
-        }
-        .social-link {
-            display: flex;
-            align-items: center;
-            gap: 0.7rem;
-            text-decoration: none;
-            color: #f4f4f4 !important;
-            background: #1b1b1b;
-            border: 1px solid #2d2d2d;
-            border-radius: 12px;
-            padding: 0.65rem 0.8rem;
-            transition: all 0.15s ease;
-        }
-        .social-link:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 8px 18px rgba(0, 0, 0, 0.2);
-        }
-        .social-link.github {
-            background: linear-gradient(145deg, #1f1f1f 0%, #171717 100%);
-            border-color: #3a3a3a;
-        }
-        .social-link.linkedin {
-            background: linear-gradient(145deg, #10263f 0%, #0c1f34 100%);
-            border-color: #2f5f8c;
-        }
-        .social-link.twitter {
-            background: linear-gradient(145deg, #14314a 0%, #102a40 100%);
-            border-color: #326a95;
-        }
-        .social-link.email {
-            background: linear-gradient(145deg, #3f1a1f 0%, #301519 100%);
-            border-color: #8c3945;
-        }
-        .social-icon {
-            width: 32px;
-            height: 32px;
-            border-radius: 8px;
-            background: rgba(255, 255, 255, 0.1);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-        }
-        .social-icon img {
-            width: 18px;
-            height: 18px;
-            display: block;
-        }
-        .social-text {
-            min-width: 0;
-        }
-        .social-label {
-            font-weight: 600;
-            margin-bottom: 0.12rem;
-        }
-        .social-handle {
-            color: #aaaaaa;
-            font-size: 0.85rem;
-        }
-        {mode_overrides}
-        </style>
-        """
 
-    st.markdown(
-        style_block.replace("{mode_overrides}", mode_overrides),
-        unsafe_allow_html=True,
-    )
+def _inject_styles(is_light_mode: bool) -> None:
+    css_path = Path("assets/ragnova.css")
+    css_text = css_path.read_text(encoding="utf-8") if css_path.exists() else ""
+    mode_overrides = _light_mode_overrides() if is_light_mode else ""
+    css_text = css_text.replace("/* MODE_OVERRIDES */", mode_overrides)
+    st.markdown(f"<style>{css_text}</style>", unsafe_allow_html=True)
+
+
+def main() -> None:
+    st.set_page_config(page_title=APP_NAME, page_icon="RN", layout="wide")
+
+    if "theme_mode" not in st.session_state:
+        st.session_state.theme_mode = "Dark"
+
+    is_light_mode = st.session_state.theme_mode == "Light"
+    _inject_styles(is_light_mode)
 
     with st.sidebar:
         st.markdown(
@@ -408,6 +162,7 @@ def main() -> None:
             key="theme_mode",
             help="Switch the application appearance.",
         )
+
         persist_dir = st.text_input("Vector store path", value=DEFAULT_PERSIST_DIR)
 
         st.subheader("Embedding Model")
@@ -459,9 +214,7 @@ def main() -> None:
         if st.button("Build/Rebuild Index"):
             source_count = _source_documents_count("data")
             if source_count == 0:
-                st.error(
-                    "No source documents found in `data/`. Add documents first, then rebuild index."
-                )
+                st.error("No source documents found in `data/`. Add documents first, then rebuild index.")
                 st.stop()
             with st.spinner("Building FAISS index from data folder..."):
                 build_index(persist_dir, embedding_model)
@@ -518,19 +271,12 @@ def main() -> None:
                     md = item.get("metadata") or {}
                     chunk_text = md.get("text", "")
                     distance = item.get("distance")
-                    with st.expander(
-                        f"Chunk {i} | distance={distance:.4f}" if distance is not None else f"Chunk {i}"
-                    ):
+                    with st.expander(f"Chunk {i} | distance={distance:.4f}" if distance is not None else f"Chunk {i}"):
                         st.write(chunk_text[:3000] if chunk_text else "No text content.")
 
         if st.session_state.pending_query:
             query_to_run = st.session_state.pending_query
-            rag = get_rag_client(
-                persist_dir,
-                embedding_model,
-                llm_model,
-                active_api_key,
-            )
+            rag = get_rag_client(persist_dir, embedding_model, llm_model, active_api_key)
 
             with st.chat_message("assistant", avatar="🤖"):
                 try:
@@ -542,14 +288,8 @@ def main() -> None:
                         )
                     )
                 except (TypeError, AttributeError):
-                    # Compatibility fallback for stale cached clients created before streaming/response mode existed.
                     get_rag_client.clear()
-                    rag = get_rag_client(
-                        persist_dir,
-                        embedding_model,
-                        llm_model,
-                        active_api_key,
-                    )
+                    rag = get_rag_client(persist_dir, embedding_model, llm_model, active_api_key)
                     st.session_state.summary = rag.search_and_summarize(query_to_run, top_k=top_k)
 
             st.session_state.raw_hits = rag.vectorstore.query(query_to_run, top_k=top_k)
