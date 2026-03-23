@@ -135,8 +135,7 @@ def main() -> None:
         }
     """ if is_light_mode else ""
 
-    st.markdown(
-        f"""
+    style_block = """
         <style>
         :root {
             --bg: #111111;
@@ -386,7 +385,10 @@ def main() -> None:
         }
         {mode_overrides}
         </style>
-        """,
+        """
+
+    st.markdown(
+        style_block.replace("{mode_overrides}", mode_overrides),
         unsafe_allow_html=True,
     )
 
