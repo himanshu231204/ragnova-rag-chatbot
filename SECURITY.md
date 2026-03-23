@@ -9,7 +9,7 @@ Security updates are applied to the latest `main` branch.
 If you discover a security issue, please do not open a public issue.
 
 - Email: himanshu231204@gmail.com
-- Subject: "Security Report - simple-rag-pipeline"
+- Subject: "Security Report - ragnova-rag-chatbot"
 
 Please include:
 

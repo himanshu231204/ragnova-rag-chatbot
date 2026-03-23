@@ -130,7 +130,7 @@ User Query → Query Embedding → FAISS Similarity Search → Top-K Chunks → 
 ## 📁 Project Structure
 
 ```text
-simple-rag-pipeline/
+ragnova-rag-chatbot/
 ├── .github/                        # CI/CD workflows
 ├── .streamlit/
 │   └── config.toml                 # Streamlit theme configuration
@@ -191,8 +191,8 @@ simple-rag-pipeline/
 **1. Clone the repository:**
 
 ```bash
-git clone https://github.com/himanshu231204/simple-rag-pipeline.git
-cd simple-rag-pipeline
+git clone https://github.com/himanshu231204/ragnova-rag-chatbot.git
+cd ragnova-rag-chatbot
 ```
 
 **2. Create and activate a virtual environment:**
@@ -316,7 +316,7 @@ You can deploy RAGNOVA directly from GitHub to [Streamlit Community Cloud](https
 
 1. **Push to GitHub** — ensure the repository contains `streamlit_app.py`, `requirements.txt`, `.streamlit/config.toml`, and `runtime.txt`.
 2. **Create a new app** at https://share.streamlit.io/:
-   - Repository: `himanshu231204/simple-rag-pipeline`
+   - Repository: `himanshu231204/ragnova-rag-chatbot`
    - Main file path: `streamlit_app.py`
 3. **Add the required secret** under *App settings → Secrets*:
 
