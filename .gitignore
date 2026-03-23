@@ -212,3 +212,6 @@ fassi_store/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+# Local developer notes
+debugging.md

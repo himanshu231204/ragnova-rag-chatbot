@@ -189,6 +189,15 @@ We will keep appending updates here.
   - Improved card depth with better borders, gradients, and hover elevation
 - Status: Implemented.
 
+### 18) GitHub logo link + RAGNOVA settings UI refresh
+- Goal: Improve repo link visibility and make settings area look more professional.
+- Action taken:
+  - Updated chat header repo link to include GitHub logo + label in one clickable control
+  - Added sidebar gradient theme styling for better visual hierarchy
+  - Added styled settings header card for `RAGNOVA Settings`
+  - Improved sidebar control/button colors and contrast for polished look
+- Status: Implemented.
+
 ## Next updates
 - Add each new issue in this format:
   - Issue

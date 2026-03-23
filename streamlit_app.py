@@ -75,6 +75,53 @@ def main() -> None:
             background: radial-gradient(circle at 20% 20%, #1b1b1b 0%, var(--bg) 48%);
             color: var(--text);
         }
+        section[data-testid="stSidebar"] > div:first-child {
+            background: linear-gradient(180deg, #101b20 0%, #141a25 55%, #171325 100%);
+            border-right: 1px solid #2c3643;
+        }
+        section[data-testid="stSidebar"] .stMarkdown p,
+        section[data-testid="stSidebar"] label,
+        section[data-testid="stSidebar"] .stCaption {
+            color: #dce6ee !important;
+        }
+        section[data-testid="stSidebar"] .stTextInput input,
+        section[data-testid="stSidebar"] .stSelectbox div[data-baseweb="select"] > div,
+        section[data-testid="stSidebar"] .stTextArea textarea {
+            background: #18202a !important;
+            border: 1px solid #304355 !important;
+            color: #e9f1f8 !important;
+        }
+        section[data-testid="stSidebar"] .stSlider [data-baseweb="slider"] {
+            padding-top: 0.35rem;
+        }
+        section[data-testid="stSidebar"] .stButton button {
+            background: linear-gradient(90deg, #00a67e 0%, #0f8fb0 100%);
+            color: #ffffff;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+        }
+        section[data-testid="stSidebar"] .stButton button:hover {
+            filter: brightness(1.07);
+        }
+        .settings-card {
+            background: linear-gradient(145deg, #1a2430 0%, #14202b 60%, #1f1933 100%);
+            border: 1px solid #31465a;
+            border-radius: 14px;
+            padding: 0.75rem 0.8rem;
+            margin-bottom: 0.8rem;
+        }
+        .settings-card .t {
+            color: #f2f8fc;
+            font-size: 1.02rem;
+            font-weight: 700;
+            margin-bottom: 0.2rem;
+        }
+        .settings-card .s {
+            color: #b8c8d6;
+            font-size: 0.86rem;
+            line-height: 1.45;
+        }
         .app-shell {
             max-width: 980px;
             margin: 0 auto;
@@ -103,6 +150,9 @@ def main() -> None:
             margin-bottom: 0.3rem;
         }
         .repo-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
             background: #202020;
             color: #f1f1f1 !important;
             border: 1px solid var(--border);
@@ -110,6 +160,11 @@ def main() -> None:
             padding: 0.45rem 0.9rem;
             text-decoration: none;
             font-size: 0.9rem;
+        }
+        .repo-link img {
+            width: 14px;
+            height: 14px;
+            display: block;
         }
         .repo-link:hover {
             border-color: #3d3d3d;
@@ -240,8 +295,15 @@ def main() -> None:
     )
 
     with st.sidebar:
-        st.header(f"{APP_NAME} Settings")
-        st.caption(APP_TAGLINE)
+        st.markdown(
+            f"""
+            <div class="settings-card">
+                <div class="t">{APP_NAME} Settings</div>
+                <div class="s">{APP_TAGLINE}</div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
         persist_dir = st.text_input("Vector store path", value=DEFAULT_PERSIST_DIR)
 
         st.subheader("Embedding Model")
@@ -314,7 +376,7 @@ def main() -> None:
     with tab_chat:
         st.markdown('<div class="app-shell">', unsafe_allow_html=True)
         st.markdown(
-            '<div class="repo-link-wrap"><a class="repo-link" href="https://github.com/himanshu231204/simple-rag-pipeline" target="_blank">GitHub Repo</a></div>',
+            '<div class="repo-link-wrap"><a class="repo-link" href="https://github.com/himanshu231204/simple-rag-pipeline" target="_blank"><img src="https://cdn.simpleicons.org/github/ffffff" alt="GitHub logo"><span>GitHub Repo</span></a></div>',
             unsafe_allow_html=True,
         )
 
