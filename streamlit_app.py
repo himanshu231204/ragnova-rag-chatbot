@@ -68,8 +68,75 @@ def build_index(persist_dir: str, embedding_model: str) -> None:
 def main() -> None:
     st.set_page_config(page_title=APP_NAME, page_icon="RN", layout="wide")
 
+    if "theme_mode" not in st.session_state:
+        st.session_state.theme_mode = "Dark"
+
+    is_light_mode = st.session_state.theme_mode == "Light"
+    mode_overrides = """
+        .stApp {
+            background: radial-gradient(circle at 20% 20%, #f3f8ff 0%, #eaf1fb 45%, #f7f9fc 100%);
+            color: #0f172a;
+        }
+        section[data-testid="stSidebar"] > div:first-child {
+            background: linear-gradient(180deg, #f3f8ff 0%, #e6eef9 55%, #edf1ff 100%);
+            border-right: 1px solid #c9d7eb;
+        }
+        section[data-testid="stSidebar"] .stMarkdown p,
+        section[data-testid="stSidebar"] label,
+        section[data-testid="stSidebar"] .stCaption {
+            color: #1f2a44 !important;
+        }
+        section[data-testid="stSidebar"] .stTextInput input,
+        section[data-testid="stSidebar"] .stSelectbox div[data-baseweb="select"] > div,
+        section[data-testid="stSidebar"] .stTextArea textarea {
+            background: #ffffff !important;
+            border: 1px solid #b4c7e3 !important;
+            color: #12213a !important;
+        }
+        .settings-card {
+            background: linear-gradient(145deg, #ffffff 0%, #edf3ff 60%, #eaf7ff 100%);
+            border: 1px solid #b9ccec;
+        }
+        .settings-card .t { color: #16233d; }
+        .settings-card .s { color: #435575; }
+        .repo-link {
+            background: #ffffff;
+            color: #0f172a !important;
+            border: 1px solid #c2d2ea;
+        }
+        .repo-link:hover {
+            border-color: #9db8de;
+            background: #f6f9ff;
+        }
+        .subhero {
+            color: #31435f;
+        }
+        .brand-tagline {
+            background: linear-gradient(90deg, #1f3a70 0%, #1f7c69 50%, #5b3b9b 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            color: transparent;
+        }
+        .dev-card {
+            background: linear-gradient(145deg, #ffffff 0%, #f4f8ff 100%);
+            border: 1px solid #c6d8ef;
+            box-shadow: 0 8px 22px rgba(71, 102, 151, 0.12);
+        }
+        .dev-title, .dev-role, .dev-desc { color: #1b2a45; }
+        .dev-pill {
+            border: 1px solid #bfd3ee;
+            background: #f7faff;
+        }
+        .dev-pill .k { color: #5a6c8d; }
+        .dev-pill .v { color: #1a2a45; }
+        .social-link {
+            color: #ffffff !important;
+        }
+    """ if is_light_mode else ""
+
     st.markdown(
-        """
+        f"""
         <style>
         :root {
             --bg: #111111;
@@ -143,6 +210,26 @@ def main() -> None:
             font-weight: 700;
             color: #f3f3f3;
             letter-spacing: 0.01em;
+        }
+        .brand-title {
+            font-size: clamp(2.2rem, 4vw, 3.5rem);
+            font-weight: 800;
+            letter-spacing: 0.04em;
+            background: linear-gradient(90deg, #18c5ff 0%, #00a67e 45%, #8b5cf6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            color: transparent;
+        }
+        .brand-tagline {
+            font-weight: 500;
+            font-size: 1.03rem;
+            background: linear-gradient(90deg, #c8dbf5 0%, #d1f0e7 50%, #dcd3ff 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            color: transparent;
+            display: inline-block;
         }
         .subhero {
             text-align: center;
@@ -297,6 +384,7 @@ def main() -> None:
             color: #aaaaaa;
             font-size: 0.85rem;
         }
+        {mode_overrides}
         </style>
         """,
         unsafe_allow_html=True,
@@ -311,6 +399,12 @@ def main() -> None:
             </div>
             """,
             unsafe_allow_html=True,
+        )
+        st.selectbox(
+            "Theme Mode",
+            options=["Dark", "Light"],
+            key="theme_mode",
+            help="Switch the application appearance.",
         )
         persist_dir = st.text_input("Vector store path", value=DEFAULT_PERSIST_DIR)
 
@@ -406,8 +500,11 @@ def main() -> None:
         )
 
         if not st.session_state.chat_history:
-            st.markdown(f'<div class="hero">{APP_NAME}</div>', unsafe_allow_html=True)
-            st.markdown(f'<div class="subhero">{APP_TAGLINE}. Ask from your indexed docs and get real-time answers.</div>', unsafe_allow_html=True)
+            st.markdown(f'<div class="hero"><span class="brand-title">{APP_NAME}</span></div>', unsafe_allow_html=True)
+            st.markdown(
+                f'<div class="subhero"><span class="brand-tagline">{APP_TAGLINE}</span>. Ask from your indexed docs and get real-time answers.</div>',
+                unsafe_allow_html=True,
+            )
             st.markdown('<div class="start-space"></div>', unsafe_allow_html=True)
 
         for msg in st.session_state.chat_history:
@@ -493,52 +590,54 @@ def main() -> None:
         st.subheader("About RAGNOVA")
         st.markdown(
             """
-            ### What RAGNOVA Is
-            RAGNOVA is a Retrieval-Augmented Generation (RAG) assistant designed for document-grounded Q&A.
-            It combines semantic retrieval from your indexed knowledge base with an LLM to produce clear,
-            context-aware answers.
+            **RAGNOVA** is a production-oriented Retrieval-Augmented Generation (RAG) assistant for
+            document-grounded question answering. It combines semantic retrieval, vector search,
+            and large language model generation to deliver responses that are aligned with your indexed content.
 
-            ### Is It "Trained" on Your Data?
-            RAGNOVA does **not** fine-tune the model on your files during app usage.
+            ### System Positioning
+            RAGNOVA is designed for practical AI knowledge workflows where answer quality, traceability,
+            and configurable model behavior are important. The app supports interactive chat with retrieval context,
+            streaming output, and configurable response style.
 
-            Instead, it uses:
-            - A pre-trained embedding model for vector search
-            - A pre-trained LLM for response generation
-            - Your indexed documents as retrieval context at query time
+            ### How Knowledge Is Used
+            RAGNOVA does **not** train or fine-tune foundation models on your files during runtime.
 
-            This means answers are generated from retrieved chunks of your documents, not from model re-training.
+            It operates with:
+            - Pre-trained embedding models for semantic retrieval
+            - Pre-trained LLMs for natural language generation
+            - Your indexed document chunks as context at inference time
 
-            ### Data Sources Used for Answers
-            The app reads local data from your project and builds a FAISS index for retrieval.
+            This architecture keeps responses grounded in retrieved evidence rather than hidden model memory updates.
 
-            Primary data path:
-            - `data/` (documents)
-            - `faiss_store/` (vector index + metadata)
+            ### Data Sources and Index Layer
+            Primary project paths:
+            - `data/`: source documents
+            - `faiss_store/`: vector index and retrieval metadata
 
-            Supported document formats in the loader pipeline:
-            - PDF, TXT, CSV, Excel, DOCX, JSON
+            Supported ingestion formats:
+            - PDF, TXT, CSV, XLSX, DOCX, JSON
 
-            ### How Results Are Generated
-            For each user query, RAGNOVA follows this flow:
-            1. Convert query into an embedding vector
-            2. Retrieve top-K most relevant chunks from FAISS
-            3. Build a grounded prompt from retrieved context
-            4. Generate final answer with selected LLM
-            5. Show retrieved chunks for transparency and auditability
+            ### Response Generation Pipeline
+            For each query, RAGNOVA executes:
+            1. Query embedding generation
+            2. Top-K semantic retrieval from FAISS
+            3. Context-grounded prompt construction
+            4. LLM response generation (streamed in UI)
+            5. Evidence visibility via retrieved chunks
 
-            ### Output Modes
-            - **Short Summary**: Targeted concise response (about 400-500 words)
-            - **Detailed**: Structured and more comprehensive explanation
+            ### Output Control
+            - **Short Summary**: concise response targeting approximately 400-500 words
+            - **Detailed**: structured, broader explanation with deeper coverage
 
-            ### Reliability & Limits
-            - Answer quality depends on document quality and retrieval relevance
-            - If key facts are missing from indexed data, output can be incomplete
-            - Better chunking and clean source documents improve results significantly
+            ### Reliability Guidance
+            RAGNOVA quality depends on document quality, chunking strategy, and retrieval relevance.
+            For best results, maintain clean source files, rebuild index after updates, and validate responses
+            against retrieved chunks for critical use cases.
 
-            ### Privacy & API Use
-            - You can provide your own API key from the UI
-            - Retrieval runs on your local indexed files
-            - LLM response generation uses the configured remote model provider
+            ### Security and Privacy Notes
+            - API key can be provided securely through environment or UI input
+            - Retrieval executes against your indexed project data
+            - Final generation uses the configured remote model provider
             """
         )
 
