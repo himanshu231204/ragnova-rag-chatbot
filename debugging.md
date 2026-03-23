@@ -99,6 +99,31 @@ We will keep appending updates here.
       - Phase 2: stream assistant response for `pending_query`, save answer, then rerun
   - Status: Implemented. Chat now behaves closer to ChatGPT interaction.
 
+  ### 10) Separate test workflow (`test.yml`)
+  - Goal: Run tests in a dedicated GitHub Actions workflow separate from CI checks.
+  - Action taken:
+    - Added `.github/workflows/test.yml`
+      - Installs dependencies + pytest
+      - Runs `pytest -q`
+    - Added `tests/test_search_contract.py` with lightweight tests for:
+      - `response_mode` argument presence
+      - streaming method contract
+      - prompt style switching
+  - Status: Implemented.
+
+### 11) CI/CD split and deployment workflow
+- Goal: Keep CI and tests separated, and add a dedicated CD pipeline.
+- Action taken:
+  - Updated `.github/workflows/ci.yml`:
+    - CI now handles syntax checks only (`py_compile`)
+  - Kept tests in `.github/workflows/test.yml`:
+    - pytest execution remains isolated in test workflow
+  - Added `.github/workflows/cd.yml`:
+    - Triggers on `main` push and manual dispatch
+    - Runs pre-deploy smoke check
+    - Triggers optional deployment webhook via `STREAMLIT_DEPLOY_WEBHOOK_URL` secret
+- Status: Implemented.
+
 ## Next updates
 - Add each new issue in this format:
   - Issue
