@@ -80,12 +80,20 @@ def main() -> None:
         }
         .hero {
             text-align: center;
-            margin-top: 8vh;
-            margin-bottom: 1.2rem;
+            margin-top: 2vh;
+            margin-bottom: 1rem;
             font-size: clamp(1.8rem, 3vw, 2.5rem);
             font-weight: 700;
             color: #f3f3f3;
             letter-spacing: 0.01em;
+        }
+        .subhero {
+            text-align: center;
+            color: #b7b7b7;
+            margin-bottom: 1rem;
+        }
+        .start-space {
+            height: 34vh;
         }
         .repo-link-wrap {
             display: flex;
@@ -182,6 +190,8 @@ def main() -> None:
         st.session_state.raw_hits = []
     if "chat_history" not in st.session_state:
         st.session_state.chat_history = []
+    if "pending_query" not in st.session_state:
+        st.session_state.pending_query = None
 
     tab_chat, tab_dev = st.tabs(["Chat", "Developer Info"])
 
@@ -194,9 +204,12 @@ def main() -> None:
 
         if not st.session_state.chat_history:
             st.markdown('<div class="hero">Where should we begin?</div>', unsafe_allow_html=True)
+            st.markdown('<div class="subhero">Ask from your indexed docs. I will answer live in chat.</div>', unsafe_allow_html=True)
+            st.markdown('<div class="start-space"></div>', unsafe_allow_html=True)
 
         for msg in st.session_state.chat_history:
-            with st.chat_message(msg["role"]):
+            avatar = "🧑" if msg["role"] == "user" else "🤖"
+            with st.chat_message(msg["role"], avatar=avatar):
                 st.markdown(msg["content"])
                 chunks = msg.get("chunks", [])
                 for i, item in enumerate(chunks, start=1):
@@ -208,6 +221,46 @@ def main() -> None:
                     ):
                         st.write(chunk_text[:3000] if chunk_text else "No text content.")
 
+        if st.session_state.pending_query:
+            query_to_run = st.session_state.pending_query
+            rag = get_rag_client(
+                persist_dir,
+                embedding_model,
+                llm_model,
+                active_api_key,
+            )
+
+            with st.chat_message("assistant", avatar="🤖"):
+                try:
+                    st.session_state.summary = st.write_stream(
+                        rag.stream_search_and_summarize(
+                            query_to_run,
+                            top_k=top_k,
+                            response_mode=response_mode,
+                        )
+                    )
+                except (TypeError, AttributeError):
+                    # Compatibility fallback for stale cached clients created before streaming/response mode existed.
+                    get_rag_client.clear()
+                    rag = get_rag_client(
+                        persist_dir,
+                        embedding_model,
+                        llm_model,
+                        active_api_key,
+                    )
+                    st.session_state.summary = rag.search_and_summarize(query_to_run, top_k=top_k)
+
+            st.session_state.raw_hits = rag.vectorstore.query(query_to_run, top_k=top_k)
+            st.session_state.chat_history.append(
+                {
+                    "role": "assistant",
+                    "content": st.session_state.summary,
+                    "chunks": st.session_state.raw_hits,
+                }
+            )
+            st.session_state.pending_query = None
+            st.rerun()
+
         st.caption("Type your query and press Enter to run.")
         query = st.chat_input("Ask anything about your indexed PDFs...")
 
@@ -217,6 +270,7 @@ def main() -> None:
             st.session_state.summary = ""
             st.session_state.raw_hits = []
             st.session_state.chat_history = []
+            st.session_state.pending_query = None
 
         if query is not None:
             if not query.strip():
@@ -227,39 +281,7 @@ def main() -> None:
                 st.stop()
 
             st.session_state.chat_history.append({"role": "user", "content": query})
-
-            with st.spinner("Running retrieval and summarization..."):
-                rag = get_rag_client(
-                    persist_dir,
-                    embedding_model,
-                    llm_model,
-                    active_api_key,
-                )
-                try:
-                    st.session_state.summary = rag.search_and_summarize(
-                        query,
-                        top_k=top_k,
-                        response_mode=response_mode,
-                    )
-                except TypeError:
-                    # Compatibility fallback for stale cached clients created before response_mode existed.
-                    get_rag_client.clear()
-                    rag = get_rag_client(
-                        persist_dir,
-                        embedding_model,
-                        llm_model,
-                        active_api_key,
-                    )
-                    st.session_state.summary = rag.search_and_summarize(query, top_k=top_k)
-                st.session_state.raw_hits = rag.vectorstore.query(query, top_k=top_k)
-
-            st.session_state.chat_history.append(
-                {
-                    "role": "assistant",
-                    "content": st.session_state.summary,
-                    "chunks": st.session_state.raw_hits,
-                }
-            )
+            st.session_state.pending_query = query
             st.rerun()
 
         st.markdown("</div>", unsafe_allow_html=True)

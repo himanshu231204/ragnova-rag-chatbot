@@ -1,4 +1,5 @@
 import os
+from typing import Iterator
 from dotenv import load_dotenv
 from src.vectorstore import FaissVectorStore
 from langchain_groq import ChatGroq
@@ -30,13 +31,7 @@ class RAGSearch:
         self.llm = ChatGroq(groq_api_key=api_key, model_name=llm_model)
         print(f"[INFO] Groq LLM initialized: {llm_model}")
 
-    def search_and_summarize(self, query: str, top_k: int = 5, response_mode: str = "short") -> str:
-        results = self.vectorstore.query(query, top_k=top_k)
-        texts = [r["metadata"].get("text", "") for r in results if r["metadata"]]
-        context = "\n\n".join(texts)
-        if not context:
-            return "No relevant documents found."
-
+    def _build_prompt(self, query: str, context: str, response_mode: str) -> str:
         if response_mode == "detailed":
             format_instruction = (
                 "Provide a detailed answer with clear sections, important points, "
@@ -48,15 +43,44 @@ class RAGSearch:
                 "Keep it clear and easy to read."
             )
 
-        prompt = (
+        return (
             f"Answer the query based only on the provided context.\\n"
             f"Query: '{query}'\\n"
             f"Style: {format_instruction}\\n\\n"
             f"Context:\\n{context}\\n\\n"
             "Final Answer:"
         )
+
+    def _get_context(self, query: str, top_k: int) -> str:
+        results = self.vectorstore.query(query, top_k=top_k)
+        texts = [r["metadata"].get("text", "") for r in results if r["metadata"]]
+        return "\n\n".join(texts)
+
+    def search_and_summarize(self, query: str, top_k: int = 5, response_mode: str = "short") -> str:
+        context = self._get_context(query, top_k)
+        if not context:
+            return "No relevant documents found."
+
+        prompt = self._build_prompt(query, context, response_mode)
         response = self.llm.invoke([prompt])
         return response.content
+
+    def stream_search_and_summarize(
+        self,
+        query: str,
+        top_k: int = 5,
+        response_mode: str = "short",
+    ) -> Iterator[str]:
+        context = self._get_context(query, top_k)
+        if not context:
+            yield "No relevant documents found."
+            return
+
+        prompt = self._build_prompt(query, context, response_mode)
+        for chunk in self.llm.stream([prompt]):
+            text = getattr(chunk, "content", "")
+            if text:
+                yield text
 
 # Example usage
 if __name__ == "__main__":

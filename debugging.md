@@ -77,6 +77,28 @@ We will keep appending updates here.
     - Enforce API contract that `search_and_summarize` includes `response_mode`
 - Status: Fixed in code, and guarded with CI for regression tracking.
 
+### 8) Chat experience upgrade (streaming + persistent thread)
+- Goal: Make UI behave like a real chatbot with live answer streaming.
+- Action taken:
+  - Updated `src/search.py`:
+    - Added `stream_search_and_summarize(...)` for token streaming
+    - Refactored prompt/context helpers for reusable logic
+  - Updated `streamlit_app.py`:
+    - Assistant response now streams live while generating
+    - User + assistant messages persist in same chat thread
+    - Added avatars for clearer chat roles
+    - Improved empty-state layout and pushed input area lower visually
+- Status: Implemented.
+
+  ### 9) Query movement during streaming
+  - Goal: When user submits a query, it should move to chat history first and then stream assistant reply in real-time below it.
+  - Action taken:
+    - Added `pending_query` state in `streamlit_app.py`
+    - Flow now works in two phases:
+      - Phase 1: append user message and trigger rerun
+      - Phase 2: stream assistant response for `pending_query`, save answer, then rerun
+  - Status: Implemented. Chat now behaves closer to ChatGPT interaction.
+
 ## Next updates
 - Add each new issue in this format:
   - Issue
