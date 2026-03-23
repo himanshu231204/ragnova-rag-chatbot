@@ -33,6 +33,14 @@ def _index_exists(persist_dir: str) -> bool:
     return (base / "faiss.index").exists() and (base / "metadata.pkl").exists()
 
 
+def _source_documents_count(data_dir: str = "data") -> int:
+    base = Path(data_dir)
+    if not base.exists():
+        return 0
+    patterns = ["**/*.pdf", "**/*.txt", "**/*.csv", "**/*.xlsx", "**/*.docx", "**/*.json"]
+    return sum(len(list(base.glob(pattern))) for pattern in patterns)
+
+
 @st.cache_resource(show_spinner=False)
 def get_rag_client(
     persist_dir: str,
@@ -353,13 +361,30 @@ def main() -> None:
                 st.warning("No GROQ_API_KEY found in environment. Enable custom key to provide one.")
 
         if st.button("Build/Rebuild Index"):
+            source_count = _source_documents_count("data")
+            if source_count == 0:
+                st.error(
+                    "No source documents found in `data/`. Add documents first, then rebuild index."
+                )
+                st.stop()
             with st.spinner("Building FAISS index from data folder..."):
                 build_index(persist_dir, embedding_model)
                 get_rag_client.clear()
             st.success("Index built successfully.")
 
     if not _index_exists(persist_dir):
-        st.info("FAISS index not found. Click 'Build/Rebuild Index' in the sidebar.")
+        source_count = _source_documents_count("data")
+        if source_count == 0:
+            st.warning(
+                "FAISS index not found, and no source docs were detected in `data/`. "
+                "For Streamlit Cloud, push your documents to the repo (or include a prebuilt `faiss_store`), "
+                "then click Build/Rebuild Index."
+            )
+        else:
+            st.info(
+                f"FAISS index not found. Detected {source_count} source file(s). "
+                "Click 'Build/Rebuild Index' in the sidebar."
+            )
         st.stop()
 
     if "summary" not in st.session_state:
