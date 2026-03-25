@@ -38,8 +38,8 @@ class RAGSearch:
     def _build_prompt(self, query: str, context: str, response_mode: str) -> str:
         if response_mode == "detailed":
             format_instruction = (
-                "Provide a detailed answer with clear sections, important points, "
-                "and examples from context where relevant."
+                "Provide a detailed answer in approximately 1500-2000 words with clear "
+                "sections, important points, and examples from context where relevant."
             )
         else:
             format_instruction = (

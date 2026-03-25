@@ -5,6 +5,12 @@ from ..config import APP_NAME, MAX_CHUNK_PREVIEW
 from src.backend.rag_client import get_rag_client
 
 
+def _distance_to_match_percentage(distance: float) -> float:
+    """Convert L2 distance into an approximate 0-100 match percentage."""
+    # Lower L2 distance means closer semantic match.
+    return max(0.0, min(100.0, (1.0 / (1.0 + max(distance, 0.0))) * 100.0))
+
+
 def render_chat_page(config):
     """Render the main chat interface."""
     st.markdown('<div class="app-shell">', unsafe_allow_html=True)
@@ -43,12 +49,14 @@ def render_chat_page(config):
                 md = item.get("metadata") or {}
                 chunk_text = md.get("text", "")
                 distance = item.get("distance")
-                expander_label = (
-                    f"Chunk {i} | distance={distance:.4f}"
-                    if distance is not None
-                    else f"Chunk {i}"
-                )
+                if distance is not None:
+                    match_pct = _distance_to_match_percentage(float(distance))
+                    expander_label = f"Chunk {i} | distance={distance:.4f} | match~{match_pct:.1f}%"
+                else:
+                    expander_label = f"Chunk {i}"
                 with st.expander(expander_label):
+                    if distance is not None:
+                        st.caption(f"Distance: {distance:.4f} | Approx match: {match_pct:.1f}%")
                     st.write(chunk_text[:MAX_CHUNK_PREVIEW] if chunk_text else "No text content.")
 
     # Process pending query

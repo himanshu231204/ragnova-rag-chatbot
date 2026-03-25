@@ -88,6 +88,16 @@ def get_light_mode_overrides() -> str:
         .social-link {
             color: #0f172a !important;
         }
+        .dev-shell .social-link,
+        .dev-shell .social-link .social-label {
+            color: #f3f7ff !important;
+        }
+        .dev-shell .social-link .social-handle {
+            color: #cbd8ee !important;
+        }
+        .dev-shell .social-link .social-icon {
+            background: rgba(255, 255, 255, 0.14) !important;
+        }
         [data-testid="stChatMessage"] {
             color: #0f172a !important;
         }
