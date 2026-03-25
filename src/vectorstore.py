@@ -1,4 +1,5 @@
 import os
+import json
 import faiss
 import numpy as np
 import pickle
@@ -21,6 +22,7 @@ class FaissVectorStore:
         self.model = SentenceTransformer(embedding_model)
         self.chunk_size = chunk_size
         self.chunk_overlap = chunk_overlap
+        self.config_path = os.path.join(self.persist_dir, "config.json")
         print(f"[INFO] Loaded embedding model: {embedding_model}")
 
     def build_from_documents(self, documents: List[Any]):
@@ -48,6 +50,14 @@ class FaissVectorStore:
         faiss.write_index(self.index, faiss_path)
         with open(meta_path, "wb") as f:
             pickle.dump(self.metadata, f)
+        # Save config
+        config = {
+            "embedding_model": self.embedding_model,
+            "chunk_size": self.chunk_size,
+            "chunk_overlap": self.chunk_overlap,
+        }
+        with open(self.config_path, "w") as f:
+            json.dump(config, f)
         print(f"[INFO] Saved Faiss index and metadata to {self.persist_dir}")
 
     def load(self):
@@ -56,6 +66,18 @@ class FaissVectorStore:
         self.index = faiss.read_index(faiss_path)
         with open(meta_path, "rb") as f:
             self.metadata = pickle.load(f)
+        
+        # Load and validate config
+        if os.path.exists(self.config_path):
+            with open(self.config_path, "r") as f:
+                config = json.load(f)
+            saved_model = config.get("embedding_model", "all-MiniLM-L6-v2")
+            if saved_model != self.embedding_model:
+                raise ValueError(
+                    f"Embedding model mismatch! Index was built with '{saved_model}' "
+                    f"but you're trying to use '{self.embedding_model}'. "
+                    f"Please rebuild the index with the correct embedding model or switch to '{saved_model}'."
+                )
         print(f"[INFO] Loaded Faiss index and metadata from {self.persist_dir}")
 
     def search(self, query_embedding: np.ndarray, top_k: int = 5):

@@ -26,7 +26,11 @@ class RAGSearch:
             docs = load_all_documents("data")
             self.vectorstore.build_from_documents(docs)
         else:
-            self.vectorstore.load()
+            try:
+                self.vectorstore.load()
+            except ValueError as e:
+                # Embedding model mismatch - raise with helpful message
+                raise ValueError(str(e)) from e
         api_key = groq_api_key or os.getenv("GROQ_API_KEY")
         self.llm = ChatGroq(groq_api_key=api_key, model_name=llm_model)
         print(f"[INFO] Groq LLM initialized: {llm_model}")

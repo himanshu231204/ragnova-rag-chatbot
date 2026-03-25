@@ -43,12 +43,17 @@ def get_rag_client(
     llm_model: str,
     groq_api_key: str,
 ) -> RAGSearch:
-    return RAGSearch(
-        persist_dir=persist_dir,
-        embedding_model=embedding_model,
-        llm_model=llm_model,
-        groq_api_key=groq_api_key,
-    )
+    try:
+        return RAGSearch(
+            persist_dir=persist_dir,
+            embedding_model=embedding_model,
+            llm_model=llm_model,
+            groq_api_key=groq_api_key,
+        )
+    except ValueError as e:
+        # Re-raise to be caught by the caller
+        raise e
+    
 
 def build_index(persist_dir: str, embedding_model: str) -> None:
     from src.vectorstore import FaissVectorStore
@@ -267,7 +272,16 @@ def main() -> None:
 
         if st.session_state.pending_query:
             query_to_run = st.session_state.pending_query
-            rag = get_rag_client(persist_dir, embedding_model, llm_model, active_api_key)
+            
+            try:
+                rag = get_rag_client(persist_dir, embedding_model, llm_model, active_api_key)
+            except ValueError as e:
+                st.error(
+                    f"**Embedding Model Mismatch Error:**\n\n{str(e)}\n\n"
+                    f"**Solution:** Click 'Build/Rebuild Index' in the sidebar to rebuild with the selected embedding model."
+                )
+                st.session_state.pending_query = None
+                st.stop()
 
             with st.chat_message("assistant", avatar="🤖"):
                 try:
