@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from src.search import RAGSearch
+from src.rag.search import RAGSearch
 
 
 def main() -> None:

@@ -1,7 +1,7 @@
 import argparse
 
-from src.data_loader import load_all_documents
-from src.vectorstore import FaissVectorStore
+from src.rag.data_loader import load_all_documents
+from src.rag.vectorstore import FaissVectorStore
 
 
 def main() -> None:

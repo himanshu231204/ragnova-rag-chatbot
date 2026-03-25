@@ -1,6 +1,6 @@
-from src.data_loader import load_all_documents
-from src.vectorstore import FaissVectorStore
-from src.search import RAGSearch
+from src.rag.data_loader import load_all_documents
+from src.rag.vectorstore import FaissVectorStore
+from src.rag.search import RAGSearch
 
 
 if __name__ == "__main__":

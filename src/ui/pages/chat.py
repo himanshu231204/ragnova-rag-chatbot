@@ -2,7 +2,7 @@
 
 import streamlit as st
 from ..config import APP_NAME, MAX_CHUNK_PREVIEW
-from ..backend.rag_client import get_rag_client
+from src.backend.rag_client import get_rag_client
 
 
 def render_chat_page(config):

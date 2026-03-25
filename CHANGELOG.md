@@ -6,8 +6,19 @@ The format is based on Keep a Changelog and this project follows Semantic Versio
 
 ## [Unreleased]
 
+## [2.0.1] - 2026-03-25
+
 ### Added
-- Initial changelog scaffold.
+- `app.py` added to `.gitignore` for local app configuration
+
+### Changed
+- Updated CI/CD workflow files to reference new modular structure
+  - `.github/workflows/ci.yml`: Updated syntax check paths for src/rag/*, src/ui/*, src/backend/*
+  - `.github/workflows/cd.yml`: Updated syntax check paths for src/rag/*, src/ui/*, src/backend/*
+
+### Fixed
+- Test import path: `tests/test_search_contract.py` now imports from `src.rag.search` instead of `src.search`
+- CI workflow now correctly validates all refactored module files
 
 ## [2.0.0] - 2026-03-25
 

@@ -75,7 +75,7 @@ def render_sidebar_settings():
 
 def render_build_index_button(config, build_index_callback):
     """Render index build button in sidebar."""
-    from ..backend.index_manager import get_source_documents_count
+    from src.backend.index_manager import get_source_documents_count
     
     with st.sidebar:
         if st.button("Build/Rebuild Index"):
