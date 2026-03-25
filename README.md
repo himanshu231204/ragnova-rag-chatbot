@@ -22,6 +22,10 @@ Your live AI knowledge copilot. Ask from your indexed docs and get real-time ans
 
 🌐 **Live Demo:** [https://ragnova-bot.streamlit.app/](https://ragnova-bot.streamlit.app/)
 
+## 🎥 Demo Video
+
+[![RAGNOVA Demo](https://img.youtube.com/vi/BpO7atlDV6I/0.jpg)](https://youtu.be/BpO7atlDV6I)
+
 ## 🖥️ Application UI
 
 <p align="center">
@@ -32,6 +36,7 @@ Your live AI knowledge copilot. Ask from your indexed docs and get real-time ans
 
 ## 📚 Table of Contents
 
+- [Demo Video](#-demo-video)
 - [Overview](#-overview)
 - [RAG Pipeline Flow](#-rag-pipeline-flow)
 - [Features](#-features)
