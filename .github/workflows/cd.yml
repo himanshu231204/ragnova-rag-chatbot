@@ -40,7 +40,7 @@ jobs:
 
       - name: Syntax check
         run: |
-          python -m py_compile app.py streamlit_app.py src/__init__.py src/data_loader.py src/embedding.py src/search.py src/vectorstore.py
+          python -m py_compile app.py streamlit_app.py src/__init__.py src/rag/data_loader.py src/rag/embedding.py src/rag/search.py src/rag/vectorstore.py src/ui/config.py src/ui/styles.py src/ui/sidebar.py src/ui/pages/chat.py src/ui/pages/about.py src/ui/pages/developer.py src/backend/index_manager.py src/backend/rag_client.py
 
       - name: Run tests
         run: pytest -q
