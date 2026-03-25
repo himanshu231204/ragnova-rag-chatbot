@@ -8,7 +8,7 @@ Your live AI knowledge copilot. Ask from your indexed docs and get real-time ans
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Python-3.10%2B-blue?style=for-the-badge&logo=python" alt="Python"/>
+  <img src="https://img.shields.io/badge/Python-3.11%2B-blue?style=for-the-badge&logo=python" alt="Python"/>
   <img src="https://img.shields.io/badge/LangChain-RAG-green?style=for-the-badge" alt="LangChain"/>
   <img src="https://img.shields.io/badge/Embeddings-SentenceTransformers-orange?style=for-the-badge" alt="Embeddings"/>
   <img src="https://img.shields.io/badge/VectorDB-FAISS-purple?style=for-the-badge" alt="FAISS"/>
@@ -64,8 +64,8 @@ Your live AI knowledge copilot. Ask from your indexed docs and get real-time ans
 - 🧠 Dense semantic embeddings via Sentence Transformers (`all-MiniLM-L6-v2`)
 - 🗄️ Persistent FAISS vector index with metadata — rebuilt automatically on first run
 - ⚡ Streaming and non-streaming responses via Groq LLMs (Llama 3, Mixtral, Gemma 2)
-- 💬 Interactive Streamlit chat UI with short and detailed answer modes
-- 🔧 Modular `src/` package — each concern is a separate, testable module
+- 💬 Interactive Streamlit chat UI with tabs for Chat, About, and Developer Info
+- 🔧 Fully modular `src/` package — `src/rag/`, `src/ui/`, and `src/backend/` are each independently testable
 
 ---
 
@@ -104,9 +104,9 @@ User Query → Query Embedding → FAISS Similarity Search → Top-K Chunks → 
 | 5 | **Groq LLM integration** — Llama 3.3 70B, Llama 3.1 8B, Mixtral 8x7B, Gemma 2 9B |
 | 6 | **Streaming responses** — token-by-token output for snappy UX |
 | 7 | **Two response modes** — *short* (400–500 words) and *detailed* (structured sections) |
-| 8 | **Streamlit chat UI** — RAGNOVA app with sidebar settings and developer info |
+| 8 | **Streamlit tabbed UI** — Chat, About RAGNOVA, and Developer Info tabs with sidebar settings |
 | 9 | **Automatic index rebuild** — missing index is rebuilt from `data/` on startup |
-| 10 | **Modular, tested codebase** — `src/` package with pytest suite and CI workflows |
+| 10 | **Modular architecture** — `src/rag/`, `src/ui/`, `src/backend/` packages with pytest suite and CI workflows |
 
 ---
 
@@ -114,11 +114,11 @@ User Query → Query Embedding → FAISS Similarity Search → Top-K Chunks → 
 
 | Component          | Technology                                          |
 |--------------------|-----------------------------------------------------|
-| Language           | Python 3.10+                                        |
+| Language           | Python 3.11+                                        |
 | Orchestration      | LangChain, LangChain-Community                      |
 | Document Parsing   | PyMuPDF, PyPDF, Docx2txt, UnstructuredExcel, etc.   |
 | Embedding Model    | Sentence Transformers (`all-MiniLM-L6-v2`)          |
-| Vector Database    | FAISS (persistent local index)                      |
+| Vector Database    | FAISS (persistent local index), ChromaDB            |
 | LLM Provider       | Groq (`langchain-groq`)                             |
 | UI Framework       | Streamlit                                           |
 | Configuration      | python-dotenv                                       |
@@ -153,10 +153,26 @@ ragnova-rag-chatbot/
 │   └── smoke_test.py               # Quick connectivity smoke test
 ├── src/
 │   ├── __init__.py
-│   ├── data_loader.py              # Multi-format document loader
-│   ├── embedding.py                # Text splitting + embedding pipeline
-│   ├── vectorstore.py              # FAISS build / save / load / query
-│   └── search.py                   # RAG orchestration + Groq LLM integration
+│   ├── rag/                        # Core RAG pipeline components
+│   │   ├── __init__.py
+│   │   ├── data_loader.py          # Multi-format document loader
+│   │   ├── embedding.py            # Text splitting + embedding pipeline
+│   │   ├── vectorstore.py          # FAISS build / save / load / query
+│   │   └── search.py               # RAG orchestration + Groq LLM integration
+│   ├── ui/                         # Streamlit frontend components
+│   │   ├── __init__.py
+│   │   ├── config.py               # Centralised app constants
+│   │   ├── styles.py               # Theme management and CSS injection
+│   │   ├── sidebar.py              # Sidebar settings and controls
+│   │   └── pages/
+│   │       ├── __init__.py
+│   │       ├── chat.py             # Chat interface and query handling
+│   │       ├── about.py            # About RAGNOVA tab
+│   │       └── developer.py        # Developer info tab
+│   └── backend/                    # Backend business logic
+│       ├── __init__.py
+│       ├── index_manager.py        # FAISS index operations and utilities
+│       └── rag_client.py           # RAG search client initialisation
 ├── tests/
 │   ├── conftest.py
 │   └── test_search_contract.py
@@ -181,7 +197,7 @@ ragnova-rag-chatbot/
 
 ### Prerequisites
 
-- Python **3.10** or higher
+- Python **3.11** or higher
 - `pip` package manager
 - A free [Groq API key](https://console.groq.com/) for LLM inference
 - One or more documents to index (PDF, TXT, CSV, Excel, Word, or JSON)
@@ -298,7 +314,7 @@ jupyter notebook notebook/rag_pipeline.ipynb
 3. **Embedding** — `SentenceTransformer` converts each chunk into a 384-dimensional dense vector.
 4. **Indexing** — `vectorstore.py` adds vectors to a FAISS `IndexFlatL2` index and persists both the index and chunk metadata to `faiss_store/`.
 5. **Retrieval** — At query time, the query is embedded and the nearest `top_k` chunks are fetched via L2 similarity search.
-6. **Generation** — `search.py` constructs a grounded prompt and streams or returns the LLM response via `langchain-groq`.
+6. **Generation** — `search.py` constructs a grounded prompt and streams or returns the LLM response via `langchain-groq` (import: `from src.rag.search import RAGSearch`).
 
 ---
 
