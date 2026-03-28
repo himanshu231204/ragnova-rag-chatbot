@@ -1,8 +1,10 @@
 """Chat Tab UI and Logic"""
 
+import time
 import streamlit as st
 from ..config import APP_NAME, MAX_CHUNK_PREVIEW
 from src.backend.rag_client import get_rag_client
+from src.backend.analytics import QueryLogger
 
 
 def _distance_to_match_percentage(distance: float) -> float:
@@ -79,6 +81,7 @@ def render_chat_page(config):
             st.stop()
 
         with st.chat_message("assistant", avatar="🤖"):
+            start_time = time.time()
             try:
                 st.session_state.summary = st.write_stream(
                     rag.stream_search_and_summarize(
@@ -97,7 +100,20 @@ def render_chat_page(config):
                 )
                 st.session_state.summary = rag.search_and_summarize(query_to_run, top_k=config["top_k"])
 
+        response_time_ms = (time.time() - start_time) * 1000
         st.session_state.raw_hits = rag.vectorstore.query(query_to_run, top_k=config["top_k"])
+        
+        QueryLogger.log_query(
+            query_text=query_to_run,
+            response_time_ms=response_time_ms,
+            top_k=config["top_k"],
+            embedding_model=config["embedding_model"],
+            llm_model=config["llm_model"],
+            response_mode=config["response_mode"],
+            chunks=st.session_state.raw_hits,
+            response_length=len(st.session_state.summary),
+        )
+        
         st.session_state.chat_history.append(
             {
                 "role": "assistant",

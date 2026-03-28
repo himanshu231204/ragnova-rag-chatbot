@@ -11,6 +11,7 @@ from src.ui.sidebar import render_sidebar_settings, render_build_index_button
 from src.ui.pages.chat import render_chat_page
 from src.ui.pages.about import render_about_page
 from src.ui.pages.developer import render_developer_page
+from src.ui.pages.analytics import render_analytics_page
 from src.backend.index_manager import index_exists, get_source_documents_count, build_index
 from src.backend.rag_client import get_rag_client
 
@@ -61,10 +62,13 @@ def main():
         st.stop()
 
     # Render main tabs
-    tab_chat, tab_about, tab_dev = st.tabs(["Chat", "About RAGNOVA", "Developer Info"])
+    tab_chat, tab_analytics, tab_about, tab_dev = st.tabs(["Chat", "📊 Analytics", "About RAGNOVA", "Developer Info"])
 
     with tab_chat:
         render_chat_page(config)
+
+    with tab_analytics:
+        render_analytics_page()
 
     with tab_about:
         render_about_page()
