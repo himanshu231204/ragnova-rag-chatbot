@@ -14,3 +14,7 @@ DEFAULT_DATA_DIR = "data"
 DEFAULT_TOP_K = 3
 DEFAULT_THEME = "Dark"
 MAX_CHUNK_PREVIEW = 3000
+
+# Analytics
+ANALYTICS_ENABLED = True
+ANALYTICS_DB_PATH = "data/analytics.db"
